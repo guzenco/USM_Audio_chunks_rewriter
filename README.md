@@ -12,3 +12,4 @@ java -jar USM_Audio_chunks_rewriter.jar
 6. Write path to .usm files with audio
 7. Confirm start
 8. Wait until "DONE!".
+You can see the use case for CGs in Honkai Impact 3 [here](https://youtu.be/rL4uFQeLoLI).
