@@ -85,6 +85,10 @@ public class USM {
 		return url;
 	}
 	
+	public void setUrl(String url) {
+		this.url = url;
+	}
+	
 	public int getChannelNumber() {
 		return getChunkData()[4];
 	}
@@ -93,9 +97,51 @@ public class USM {
 		return getChunkData()[7];
 	}
 	
-	public int getTime() {
-		byte data[] = get(getChunkData(), 8, 4);
+	public byte[] getPayload () {
+		return get(list.get(pos), 32, getSize() +8);
+	}
+	
+	public int getDelayForSbt() {
+		byte[] b = list.get(pos);
+		byte[] d = {b[32+11], b[32+10], b[32+9], b[32+8]};
+		return ByteBuffer.wrap(d).getInt();
+	}
+	
+	public void setDelayForSbt(int delay) {
+		byte[] b = list.get(pos);
+		byte[] d = ByteBuffer.allocate(4).putInt(delay).array();
+		for(int i = 0; i < 4; i ++) {
+			b[32 + 11 - i] = d[i];
+		}
+	}
+	
+	public int getTotalTime() {
+		int _pos = pos;
+		toStart();
+		int c = 0;
+		int framerate = -1;
+		while(next("@SFV")) {
+			if(getPayloadType() == 0) {
+				c++;
+				if(framerate == -1)
+					framerate = getFrameRate();
+			}
+		}
+		pos = _pos;
+		return (int) Math.round(c * (1000.* 100. / framerate));
+	}
+	
+	public int getFrameRate() {
+		byte data[] = get(getChunkData(), 12, 4);
 		return ByteBuffer.wrap(data).getInt();
+	}
+	
+	public void setFrameRate(int fr) {
+		byte[] bytes = ByteBuffer.allocate(4).putInt(fr).array();
+		byte[] data = list.get(pos);
+		for(int i = 0; i < 4; i++) {
+			data[8 + 12 + i] = bytes[i];
+		}
 	}
 	
 	public byte[] getByteData() {
@@ -155,6 +201,76 @@ public class USM {
 	public void add(byte[] d) {
 		list.add(d);
 	}
+	
+	public void add(List<byte[]> da, double k) {
+		if(da.size() == 0)
+			return;
+		int group_size = 1;
+		byte[][] result = new byte[da.size() + list.size()][];
+
+		int d = result.length - da.size();
+		
+		result[2] = da.get(0);
+		int i = 1;
+		
+		int audio_distributed;
+		int area_for_distribution;
+		
+		if(k <= 1) {		
+			audio_distributed = (int) Math.floor(da.size() * k);
+			area_for_distribution = (result.length - (da.size() - audio_distributed));
+		}else {
+			audio_distributed = da.size();
+			//area_for_distribution = (int) Math.round(result.length / k);n
+			area_for_distribution = result.length;
+		}
+		while(i < audio_distributed) {
+			int index = (int) Math.floor(1. * i / audio_distributed * area_for_distribution);
+			index = Math.max(5, index);
+			for(int j = 0; j < group_size && i < audio_distributed ;j++) {
+				while(result[index] != null)
+					index++;
+				result[index] = da.get(i);
+				i++;
+			}	
+		};
+		
+		while(i < da.size()) {
+			result[d + i] = da.get(i++);
+		}
+		
+		int index = 0;
+		for (byte[] bs : list) {
+			while(result[index] != null)
+				index++;
+			result[index] = bs;
+		}
+		list = new ArrayList<byte[]>(Arrays.asList(result));
+	}
+	
+	/*
+	public void add(List<byte[]> da) {
+		int g_size = 5;
+		
+		byte[][] result = new byte[da.size() + list.size()][];
+		for(int i = 0; i < Math.ceil(da.size()) ; i++) {
+			int index = (int) Math.floor(1. * i / da.size() * result.length);
+			if(index <3)
+				index += 3;
+			while(result[index] != null)
+				index++;
+			
+			result[index] = da.get(i);
+		};
+		int index = 0;
+		for (byte[] bs : list) {
+			while(result[index] != null)
+				index++;
+			result[index] = bs;
+		}
+		list = new ArrayList<byte[]>(Arrays.asList(result));
+	}
+	*/
 	
 	public boolean next() {
 		if(pos + 1 >= list.size())

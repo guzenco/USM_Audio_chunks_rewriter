@@ -1,9 +1,58 @@
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class Tool {
 
-
+	private boolean compareArraysInList(List<byte[]> list1, List<byte[]> list2) {
+		if(list1.size() != list2.size())
+			return false;
+		for(int i = 0; i < list1.size(); i++) {
+			if(!Arrays.equals(list1.get(i), list2.get(i)))
+				return false;
+		}
+		return true;
+	}
+	
 	private void update(USM j, USM c) {
+		j.reinit();
+		c.reinit();
+		List<byte[]> cn_audio = new ArrayList<byte[]>();
+		List<byte[]> jp_audio = new ArrayList<byte[]>();
+		while(j.next("@SFA")) {
+			do {
+				jp_audio.add(j.getChunk());
+				if(j.remove())
+					break;
+			} while (j.getSgnt().equals("@SFA"));
+		}
+		while(c.next("@SFA")) {
+			cn_audio.add(c.getChunk());
+		}
+		
+		if(cn_audio.size() == 0) {
+			System.out.println("ERROR! FILE CONTAINS NO AUDIO: " + c.getUrl());
+			return;
+		}
+		if(compareArraysInList(cn_audio, jp_audio)) {
+			System.out.println("ERROR! AUDIO IN FILES IS THE SAME: " + c.getUrl());
+			return;
+		}
+			
+		int ctt = c.getTotalTime();
+		int jtt = j.getTotalTime();
+		if (Math.abs(ctt - jtt) > 300) {
+			System.out.println("WARNING! TIME DIFERENCE (c-j=" + (ctt - jtt) + "ms): " + j.getUrl());
+		}
+		
+		j.add(cn_audio, 1. * jtt / ctt);
+		j.save();
+	}
+
+	private void updateOld(USM j, USM c) {
 		j.reinit();
 		c.reinit();
 		boolean jb = true;
@@ -46,6 +95,17 @@ public class Tool {
 		j.save();
 	}
 	
+	private boolean compareFiles(String filePath1, String filePath2) {
+		try {
+			
+			byte[] data1 = Files.readAllBytes(Paths.get(filePath1));
+			byte[] data2 = Files.readAllBytes(Paths.get(filePath2));	
+			return Arrays.equals(data1, data2);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return false;	
+	}
 	
 	public void run(String url_org, String url_cn) {
 		File folder_cn = new File(url_cn);
@@ -58,9 +118,13 @@ public class Tool {
 				String[] format = file_cn.getName().split("\\.");
 				if (format.length > 1 && format[format.length - 1].equalsIgnoreCase("usm")) {
 					if (file_jp.exists()) {
-						USM j = new USM(file_jp.getPath());
-						USM c = new USM(file_cn.getPath());
-						update(j, c);
+						if(!compareFiles(file_jp.getPath(), file_cn.getPath())) {
+							USM j = new USM(file_jp.getPath());
+							USM c = new USM(file_cn.getPath());
+							update(j, c);
+						} else {
+							System.out.println("ERROR! FILES SAME: " + name);
+						}
 					} else {
 						System.out.println("ERROR! FILE NO EXIST: " + name);
 					}
