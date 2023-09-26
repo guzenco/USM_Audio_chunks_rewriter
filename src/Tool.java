@@ -48,10 +48,15 @@ public class Tool {
 			System.out.println("WARNING! TIME DIFERENCE (c-j=" + (ctt - jtt) + "ms): " + j.getUrl());
 		}
 		
-		j.add(cn_audio, 1. * jtt / ctt);
+		double k = 1. * jtt / ctt;
+		if(k <= 1 && Math.abs(jp_audio.size() - k * cn_audio.size() * k) <= 5) {
+			updateOld(j, c);
+		}else {
+			j.addAudio(cn_audio, k);
+		}
 		j.save();
 	}
-
+	
 	private void updateOld(USM j, USM c) {
 		j.reinit();
 		c.reinit();
@@ -72,7 +77,7 @@ public class Tool {
 				}
 			} else {
 				if(jb) {
-					System.out.println("WARNING! DIFFERENT NUMBER OF AUDIO CHUNKS (j > c): " + j.getUrl());
+					//System.out.println("WARNING! DIFFERENT NUMBER OF AUDIO CHUNKS (j > c): " + j.getUrl());
 					do {
 						do {
 							if(j.remove())
@@ -80,7 +85,7 @@ public class Tool {
 						} while (j.getSgnt().equals("@SFA"));
 					} while (j.next("@SFA"));
 				} else {
-					System.out.println("WARNING! DIFFERENT NUMBER OF AUDIO CHUNKS (j < c): " + j.getUrl());
+					//System.out.println("WARNING! DIFFERENT NUMBER OF AUDIO CHUNKS (j < c): " + j.getUrl());
 					do {
 						j.add(c.getChunk());
 					} while(c.next("@SFA"));
@@ -91,8 +96,6 @@ public class Tool {
 			jb = j.next("@SFA");
 			cb = c.next("@SFA");
 		}
-		
-		j.save();
 	}
 	
 	private boolean compareFiles(String filePath1, String filePath2) {

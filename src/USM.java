@@ -202,16 +202,28 @@ public class USM {
 		list.add(d);
 	}
 	
-	public void add(List<byte[]> da, double k) {
+	public void addAudio(List<byte[]> da, double k) {
 		if(da.size() == 0)
 			return;
 		int group_size = 1;
 		byte[][] result = new byte[da.size() + list.size()][];
 
-		int d = result.length - da.size();
-		
-		result[2] = da.get(0);
-		int i = 1;
+		int start_pos;
+		toStart();
+		if(next("@SBT")) {
+			result[2] = da.get(0);
+			result[5] = da.get(1);
+			result[8] = da.get(2);
+			result[10] = da.get(3);
+			start_pos = 12;
+		} else {
+			result[2] = da.get(0);
+			result[4] = da.get(1);
+			result[6] = da.get(2);
+			result[8] = da.get(3);
+			start_pos = 10;
+		}
+		int i = 4;
 		
 		int audio_distributed;
 		int area_for_distribution;
@@ -224,9 +236,11 @@ public class USM {
 			//area_for_distribution = (int) Math.round(result.length / k);n
 			area_for_distribution = result.length;
 		}
+		audio_distributed -= 4;
+		area_for_distribution -= start_pos;
 		while(i < audio_distributed) {
-			int index = (int) Math.floor(1. * i / audio_distributed * area_for_distribution);
-			index = Math.max(5, index);
+			int index = (int) Math.floor(1. * (i - 4) / audio_distributed * area_for_distribution);
+			index += start_pos;
 			for(int j = 0; j < group_size && i < audio_distributed ;j++) {
 				while(result[index] != null)
 					index++;
@@ -235,6 +249,7 @@ public class USM {
 			}	
 		};
 		
+		int d = result.length - da.size();
 		while(i < da.size()) {
 			result[d + i] = da.get(i++);
 		}
@@ -246,6 +261,7 @@ public class USM {
 			result[index] = bs;
 		}
 		list = new ArrayList<byte[]>(Arrays.asList(result));
+		toStart();
 	}
 	
 	/*
