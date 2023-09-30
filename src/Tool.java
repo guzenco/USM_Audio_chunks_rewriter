@@ -49,7 +49,7 @@ public class Tool {
 		}
 		
 		double k = 1. * jtt / ctt;
-		if(k <= 1 && Math.abs(jp_audio.size() - k * cn_audio.size() * k) <= 5) {
+		if(k <= 1 && Math.abs(jp_audio.size() - k * cn_audio.size()) <= 5) {
 			updateOld(j, c);
 		}else {
 			j.addAudio(cn_audio, k);
