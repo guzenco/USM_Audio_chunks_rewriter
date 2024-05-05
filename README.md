@@ -14,3 +14,14 @@ java -jar USM_Audio_chunks_rewriter.jar
 8. Wait until "DONE!".
 
 You can see the use case for CGs in Honkai Impact 3 [here](https://youtu.be/rL4uFQeLoLI).
+# Command line arguments
+
+``-group-size=<n>``
+
+&emsp;Represents the size of groups of audio chunks evenly distributed throughout the file. Typically should be equal to the number of audio tracks. A value greater than the number of audio tracks can help with or cause stutters/freezing in some players.
+
+&emsp;Default: ``1``
+
+&emsp;Valid values: ``[1, ∞)``
+
+&emsp;Example: ``java -jar USM_Audio_chunks_rewriter.jar -group-size=2``
