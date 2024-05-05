@@ -7,6 +7,16 @@ import java.util.List;
 
 public class Tool {
 
+	private int group_size = 1;
+	
+	public int getGroupSize() {
+		return group_size;
+	}
+
+	public void setGroupSize(int sequence_size) {
+		this.group_size = sequence_size;
+	}
+
 	private boolean compareArraysInList(List<byte[]> list1, List<byte[]> list2) {
 		if(list1.size() != list2.size())
 			return false;
@@ -52,7 +62,7 @@ public class Tool {
 		if(k <= 1 && Math.abs(jp_audio.size() - k * cn_audio.size()) <= 5) {
 			updateOld(j, c);
 		}else {
-			j.addAudio(cn_audio, k);
+			j.addAudio(cn_audio, k, this.getGroupSize());
 		}
 		j.save();
 	}

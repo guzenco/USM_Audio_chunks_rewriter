@@ -202,10 +202,9 @@ public class USM {
 		list.add(d);
 	}
 	
-	public void addAudio(List<byte[]> da, double k) {
+	public void addAudio(List<byte[]> da, double k, int group_size) {
 		if(da.size() == 0)
 			return;
-		int group_size = 1;
 		byte[][] result = new byte[da.size() + list.size()][];
 
 		int start_pos;
