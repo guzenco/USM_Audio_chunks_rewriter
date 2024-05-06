@@ -207,22 +207,32 @@ public class USM {
 			return;
 		byte[][] result = new byte[da.size() + list.size()][];
 
-		int start_pos;
+		int start_pos = 0;
 		toStart();
-		if(next("@SBT")) {
-			result[2] = da.get(0);
-			result[5] = da.get(1);
-			result[8] = da.get(2);
-			result[10] = da.get(3);
-			start_pos = 12;
-		} else {
-			result[2] = da.get(0);
-			result[4] = da.get(1);
-			result[6] = da.get(2);
-			result[8] = da.get(3);
-			start_pos = 10;
+	
+		int mcs = 0;
+		int video_traks = 0;
+		
+		int[] payloadtypes = {1, 2, 3, 2};
+		for (int payloadtype : payloadtypes) {
+			while (this.getPayloadType() == payloadtype) {
+				result[start_pos++] = list.get(0);
+				String sgnt = this.getSgnt();
+				list.remove(0);
+				if (sgnt.equals("@SFV")) {
+					video_traks++;
+					if(!this.getSgnt().equals("@SFV") || this.getPayloadType() != payloadtype) {
+						while (da.get(mcs)[15] == payloadtype) {
+							result[start_pos++] = da.get(mcs++);
+						}
+					}
+				}
+			}
 		}
-		int i = 4;
+		video_traks /= payloadtypes.length;
+		
+		start_pos += video_traks;
+		int i = mcs;
 		
 		int audio_distributed;
 		int area_for_distribution;
@@ -232,13 +242,12 @@ public class USM {
 			area_for_distribution = (result.length - (da.size() - audio_distributed));
 		}else {
 			audio_distributed = da.size();
-			//area_for_distribution = (int) Math.round(result.length / k);n
 			area_for_distribution = result.length;
 		}
-		audio_distributed -= 4;
+		audio_distributed -= mcs;
 		area_for_distribution -= start_pos;
 		while(i < audio_distributed) {
-			int index = (int) Math.floor(1. * (i - 4) / audio_distributed * area_for_distribution);
+			int index = (int) Math.floor(1. * (i - mcs) / audio_distributed * area_for_distribution);
 			index += start_pos;
 			for(int j = 0; j < group_size && i < audio_distributed ;j++) {
 				while(result[index] != null)
@@ -262,31 +271,7 @@ public class USM {
 		list = new ArrayList<byte[]>(Arrays.asList(result));
 		toStart();
 	}
-	
-	/*
-	public void add(List<byte[]> da) {
-		int g_size = 5;
 		
-		byte[][] result = new byte[da.size() + list.size()][];
-		for(int i = 0; i < Math.ceil(da.size()) ; i++) {
-			int index = (int) Math.floor(1. * i / da.size() * result.length);
-			if(index <3)
-				index += 3;
-			while(result[index] != null)
-				index++;
-			
-			result[index] = da.get(i);
-		};
-		int index = 0;
-		for (byte[] bs : list) {
-			while(result[index] != null)
-				index++;
-			result[index] = bs;
-		}
-		list = new ArrayList<byte[]>(Arrays.asList(result));
-	}
-	*/
-	
 	public boolean next() {
 		if(pos + 1 >= list.size())
 			return false;
