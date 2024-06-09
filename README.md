@@ -25,3 +25,25 @@ You can see the use case for CGs in Honkai Impact 3 [here](https://youtu.be/rL4u
 &emsp;Valid values: ``[1, ∞)``
 
 &emsp;Example: ``java -jar USM_Audio_chunks_rewriter.jar -group-size=2``
+
+``-source-channel=<c>``
+
+&emsp;Allows you to select a specific audio track in files with audio.
+
+&emsp;By default all audio tracks are selected.
+
+&emsp;Valid values: ``[0, ∞)``
+
+&emsp;Example: ``java -jar USM_Audio_chunks_rewriter.jar -source-channel=1``
+
+``-destination-channel=<c>``
+
+&emsp;Allows you to select a specific audio track in files for rewriting.
+
+&emsp;By default all audio tracks in files for rewriting will be rewritten.
+
+&emsp;If ``-source-channel`` is not specified and ``-destination-channel`` is specified, ``-source-channel=0`` will be automatically used.
+
+&emsp;Valid values: ``[0, ∞)``
+
+&emsp;Example: ``java -jar USM_Audio_chunks_rewriter.jar -destination-channel=0 -source-channel=1``
