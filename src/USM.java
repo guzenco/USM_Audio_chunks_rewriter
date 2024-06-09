@@ -98,6 +98,21 @@ public class USM {
 		data[8 + 4] = (byte) channel;
 	}
 	
+	public int getAudioChannels() {
+		int _pos = pos;
+		toStart();
+		int c = 0;
+		while(next("@SFA")) {
+			if(this.getPayloadType() == 1) {
+				c++;
+			}else {
+				break;
+			}
+		}
+		pos = _pos;
+		return c;
+	}
+	
 	public int getPayloadType () {
 		return getChunkData()[7];
 	}

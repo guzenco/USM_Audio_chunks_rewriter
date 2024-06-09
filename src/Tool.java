@@ -56,6 +56,8 @@ public class Tool {
 		c.reinit();
 		List<byte[]> cn_audio = new ArrayList<byte[]>();
 		List<byte[]> jp_audio = new ArrayList<byte[]>();
+		int j_audio_channels = j.getAudioChannels();
+		int c_audio_channels = c.getAudioChannels();
 		while(j.next("@SFA")) {
 			do {
 				if(this.getDestinationChannel() == -1 || j.getChannelNumber() == this.getDestinationChannel()) {
@@ -96,7 +98,7 @@ public class Tool {
 		}
 		
 		double k = 1. * jtt / ctt;
-		if(k <= 1 && Math.abs(jp_audio.size() - k * cn_audio.size()) <= 5 && this.getDestinationChannel() == -1 && this.getSourceChannel() == -1) {
+		if(k <= 1 && Math.abs(jp_audio.size() - k * cn_audio.size()) <= 5 && this.getDestinationChannel() == -1 && this.getSourceChannel() == -1 && j_audio_channels == c_audio_channels) {
 			updateOld(j, c);
 		}else {
 			j.addAudio(cn_audio, k, this.getGroupSize());
