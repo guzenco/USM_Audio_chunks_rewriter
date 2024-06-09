@@ -16,6 +16,30 @@ public class Tool {
 	public void setGroupSize(int sequence_size) {
 		this.group_size = sequence_size;
 	}
+	
+	private int source_channel = -1;
+	
+	
+	public int getSourceChannel() {
+		return source_channel;
+	}
+
+	public void setSourceChannel(int source_channel) {
+		this.source_channel = source_channel;
+	}
+
+	private int destination_channel = -1;
+	
+	public int getDestinationChannel() {
+		return destination_channel;
+	}
+
+	public void setDestinationChannel(int destination_channel) {
+		this.destination_channel = destination_channel;
+		if(destination_channel != -1 && getSourceChannel() == -1) {
+			setSourceChannel(0);
+		}
+	}
 
 	private boolean compareArraysInList(List<byte[]> list1, List<byte[]> list2) {
 		if(list1.size() != list2.size())
@@ -34,13 +58,26 @@ public class Tool {
 		List<byte[]> jp_audio = new ArrayList<byte[]>();
 		while(j.next("@SFA")) {
 			do {
-				jp_audio.add(j.getChunk());
-				if(j.remove())
+				if(this.getDestinationChannel() == -1 || j.getChannelNumber() == this.getDestinationChannel()) {
+					jp_audio.add(j.getChunk());
+					if(j.remove())
+						break;
+				}else {
 					break;
+				}
 			} while (j.getSgnt().equals("@SFA"));
 		}
 		while(c.next("@SFA")) {
-			cn_audio.add(c.getChunk());
+			if(this.getSourceChannel() == -1) {
+				cn_audio.add(c.getChunk());
+			}else if(c.getChannelNumber() == this.getSourceChannel()) {
+				if(this.getDestinationChannel() == -1) {
+					c.setChannelNumber(0);
+				}else {
+					c.setChannelNumber(this.getDestinationChannel());
+				}
+				cn_audio.add(c.getChunk());
+			}
 		}
 		
 		if(cn_audio.size() == 0) {
@@ -59,7 +96,7 @@ public class Tool {
 		}
 		
 		double k = 1. * jtt / ctt;
-		if(k <= 1 && Math.abs(jp_audio.size() - k * cn_audio.size()) <= 5) {
+		if(k <= 1 && Math.abs(jp_audio.size() - k * cn_audio.size()) <= 5 && this.getDestinationChannel() == -1 && this.getSourceChannel() == -1) {
 			updateOld(j, c);
 		}else {
 			j.addAudio(cn_audio, k, this.getGroupSize());

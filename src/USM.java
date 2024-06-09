@@ -93,6 +93,11 @@ public class USM {
 		return getChunkData()[4];
 	}
 	
+	public void setChannelNumber(int channel) {
+		byte[] data = list.get(pos);
+		data[8 + 4] = (byte) channel;
+	}
+	
 	public int getPayloadType () {
 		return getChunkData()[7];
 	}
